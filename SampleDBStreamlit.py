@@ -6,6 +6,13 @@ import plotly.graph_objects as go
 # ------------------ PAGE CONFIG ------------------
 st.set_page_config(page_title="Healthcare Dashboard", layout="wide")
 
+# ------------------ Load CSS ----------------------
+def load_css():
+    with open("Style.css") as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+load_css()
+
 # ------------------ SIDEBAR ------------------
 st.sidebar.title("🧠 Dashboard Menu")
 
@@ -23,10 +30,10 @@ st.title("📊 Demographics Dashboard")
 # ------------------ KPI CARDS ------------------
 col1, col2, col3, col4 = st.columns(4)
 
-col1.metric("Total Patients", 469)
-col2.metric("Male", 281)
-col3.metric("Female", 188)
-col4.metric("Long-Term PD Rate", "25%")
+col1.markdown(f'<div class="kpi-card"><h4>Total</h4><h2>{len(df_filtered)}</h2></div>', unsafe_allow_html=True)
+col2.markdown(f'<div class="kpi-card"><h4>Male</h4><h2>{(df_filtered["Gender"]=="Male").sum()}</h2></div>', unsafe_allow_html=True)
+col3.markdown(f'<div class="kpi-card"><h4>Female</h4><h2>{(df_filtered["Gender"]=="Female").sum()}</h2></div>', unsafe_allow_html=True)
+col4.markdown(f'<div class="kpi-card"><h4>Avg Age</h4><h2>{df_filtered["Age"].mean():.1f}</h2></div>', unsafe_allow_html=True)
 
 st.markdown("---")
 
@@ -52,77 +59,24 @@ alcohol_data = pd.DataFrame({
 col1, col2, col3 = st.columns(3)
 
 # 🔹 Donut Chart
-with col1:
-    st.subheader("Patients by Condition")
-    fig1 = px.pie(
-        condition_data,
-        values='Count',
-        names='Condition',
-        hole=0.5
-    )
-    st.plotly_chart(fig1, use_container_width=True)
-    st.info("Parkinson's patients form the largest group.")
+fig = px.pie(df_filtered, names="Condition", hole=0.5)
+st.plotly_chart(fig, use_container_width=True)
 
-# 🔹 Bar Chart
-with col2:
-    st.subheader("Diagnosis Age by Gender")
-    fig2 = px.bar(
-        age_data,
-        x="Gender",
-        y=["Left-handed", "Right-handed"],
-        barmode='group'
-    )
-    st.plotly_chart(fig2, use_container_width=True)
-    st.info("Left-handed males show delayed diagnosis.")
+fig = go.Figure(go.Sankey(
+    node=dict(label=["PD","DD","Patients","High Risk"]),
+    link=dict(source=[0,1,2], target=[2,2,3], value=[100,80,50])
+))
+st.plotly_chart(fig)
 
-# 🔹 Combo Chart
-with col3:
-    st.subheader("Alcohol Impact by Age")
+fig = px.bar(df_filtered, x="Gender", color="Condition")
+st.plotly_chart(fig, use_container_width=True)
 
-    fig3 = go.Figure()
+fig = go.Figure(go.Sankey(
+    node=dict(label=["PD","DD","Patients","High Risk"]),
+    link=dict(source=[0,1,2], target=[2,2,3], value=[100,80,50])
+))
+st.plotly_chart(fig)
 
-    fig3.add_trace(go.Bar(
-        x=alcohol_data["Age Group"],
-        y=alcohol_data["Patients"],
-        name="Patients"
-    ))
-
-    fig3.add_trace(go.Scatter(
-        x=alcohol_data["Age Group"],
-        y=alcohol_data["Worsening %"],
-        name="Worsening %",
-        yaxis="y2"
-    ))
-
-    fig3.update_layout(
-        yaxis2=dict(overlaying='y', side='right')
-    )
-
-    st.plotly_chart(fig3, use_container_width=True)
-    st.info("Mid-age groups show highest worsening.")
-
-st.markdown("---")
-
-# ------------------ SANKEY DIAGRAM ------------------
-st.subheader("Patients by Family History")
-
-fig4 = go.Figure(data=[go.Sankey(
-    node=dict(
-        pad=15,
-        thickness=20,
-        label=[
-            "PD", "DD", "Patients",
-            "No History", "High Risk", "Moderate Risk"
-        ]
-    ),
-    link=dict(
-        source=[0, 1, 2, 2, 2],
-        target=[2, 2, 3, 4, 5],
-        value=[276, 114, 343, 90, 25]
-    )
-)])
-
-st.plotly_chart(fig4, use_container_width=True)
 
 # ------------------ FOOTER ------------------
 st.markdown("---")
