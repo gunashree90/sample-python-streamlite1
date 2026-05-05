@@ -1,14 +1,10 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-
+import seaborn as sns
 data = pd.read_excel("GDM_Python_Aug2025.xlsx")
 df = data.copy()
 
-import streamlit as st
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 st.set_page_config(layout="wide")
 
 df['Height_m'] = df['Height_cms'] / 100
