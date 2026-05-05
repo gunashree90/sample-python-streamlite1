@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
+st.write("Working directory:", os.getcwd())
+st.write("Files:", os.listdir())
 data = pd.read_excel("GDM_Python_Aug2025.xlsx")
 df = data.copy()
 
